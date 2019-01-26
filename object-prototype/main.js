@@ -7,15 +7,15 @@ function initCheckBirthday() {
 }
 
 function checkBirthday(birthday) {
-    birthday = new Date(birthday);
-    const diff = Date.now() - birthday.getTime();
-    const date = new Date(diff);
-    const age = date.getFullYear() - 1970;
+    const now = +new Date();
+    birthday = +new Date(birthday);
+    const diff = now - birthday;
+    const age = diff/31471200000;
     console.log(age);
     if (age >= 18){
       return age
     }
-}
+  }
 
 function initPrintAnimalSound() {
     const animal = {

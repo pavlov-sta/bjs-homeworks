@@ -1,6 +1,17 @@
 class Profile {
-  
-  create(
+  constructor({
+    username,
+    name: { firstName, lastName },
+    password,
+  }) {
+    this.createUser = [{
+      username ,
+      name: { firstName, lastName},
+      password,
+    }];
+  }
+
+  createUser(
     {
       username,
       name: { firstName, lastName },

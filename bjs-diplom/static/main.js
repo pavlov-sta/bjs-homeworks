@@ -1,173 +1,153 @@
 class Profile {
-  constructor({
-    username,
-    name: { firstName, lastName },
-    password,
-  }) {
-    this.username = {
-      username,
-      name: { firstName, lastName },
-      password,
+  constructor({ username, name: { firstName, lastName }, password }) {
+    this.username = username;
+    this.name = {
+      firstName,
+      lastName,
     };
+    this.password = password;
 
     this.status = false;
     this.money = false;
   }
 
-  createUser(
-    {
-      username,
-      name: { firstName, lastName },
-      password,
-    },
-    callback
-  ) {
-    return ApiConnector.createUser({ username, name: { firstName, lastName }, password }, (err, data) => {
+  createUser(callback) {
+    return ApiConnector.createUser({ username: this.username, name: this.name, password: this.password }, (err, data) => {
+      console.log(`Пользователь ${this.name.firstName} создан`);
       callback(err, data);
     });
   }
-
-  performLogin({ username, password }, callback) {
-    return ApiConnector.performLogin({ username, password }, (err, data) => {
-      callback(err, data);
-    });
+  authorize(callback) {
+    return ApiConnector.performLogin(
+      { username: this.username, password: this.password },
+      (err, data) => {
+        console.log(`Пользователь ${this.name.firstName} авторизован`);
+        callback(err, data);
+      }
+    );
   }
 
   addMoney({ currency, amount }, callback) {
     return ApiConnector.addMoney({ currency, amount }, (err, data) => {
+      console.log(`Зачисленно ${amount} ${currency}`);
       callback(err, data);
     });
   }
 
   transferMoney({ to, amount }, callback) {
     return ApiConnector.transferMoney({ to, amount }, (err, data) => {
+      console.log(`Переведино ${amount} пользователю ${to} `);
       callback(err, data);
     });
   }
 
   convertMoney({ fromCurrency, targetCurrency, targetAmount }, callback) {
     return ApiConnector.convertMoney({ fromCurrency, targetCurrency, targetAmount }, (err, data) => {
+      console.log(`Конвертация ${fromCurrency} в ${targetAmount} ${targetCurrency}`);
       callback(err, data);
     });
   }
 
   getStocks(callback) {
     return ApiConnector.getStocks((err, data) => {
+      console.log(`Текущий курс`);
       callback(err, data);
     });
-  }
-  getStatus() {
-    return this.status;
-  }
-
-  isMoney() {
-    return this.money;
   }
 }
 
 function main() {
-  let Vova = new Profile({
+  let user = new Profile({
     username: 'Vova',
     name: { firstName: 'Vova', lastName: 'Evdokimov' },
     password: 'gfhj'
   });
 
 
-  Vova.createUser({
-    username: 'vova',
-    name: { firstName: 'Vova', lastName: 'Evdokimov' },
-    password: 'gfhj'
-  }, (err, data) => {
+  user.createUser((err, data) => {
     if (err) {
       if (err.code === 409) {
-        Vova.performLogin({ username: 'vova', password: 'gfhj' }, (err, data) => {
+        user.authorize((err, data) => {
           if (err) {
             console.error('Не авторизован');
           } else {
-            Vova.status = true;
-            console.log(`Авторизован Vova`);
+            user.status = true;
+            //console.log(`Авторизован ${username}`);
           }
         });
       }
     } else {
-      Vova.status = true;
-      console.log(`Создан пользователь ${username}`);
+      user.status = true;
+      console.log(`Создан пользователь ${user.name.firstName}`);
     }
   });
 
-  let Fatima = new Profile({
+  let user2 = new Profile({
     username: 'fatima',
     name: { firstName: 'Fatima', lastName: 'Chernyshev' },
     password: 'ivanspass',
   });
-  Fatima.createUser({
-    username: 'ffg',
-    name: { firstName: 'ffg', lastName: 'Chernyshev' },
-    password: 'ffg',
-  }, (err, data) => {
+
+  user2.createUser((err, data) => {
     if (err) {
       if (err.code === 409) {
-        Fatima.performLogin({ username: 'ffg', password: 'ffg' }, (err, data) => {
+        user2.authorize((err, data) => {
           if (err) {
-            console.error(err.code);
+            console.error('Не авторизован');
           } else {
-            Fatima.status = true;
-            console.log(`Авторизован Fatima`);
+            user2.status = true;
+            //console.log(`Авторизован ${username}`);
           }
         });
       }
     } else {
-      Fatima.status = true;
-      console.log(`Создан пользователь  Fatima`);
+      user2.status = true;
+      console.log(`Создан пользователь  ${user2.name.firstName}`);
     }
   });
 
-  Fatima.addMoney({ currency: 'RUB', amount: 500000 }, (err, data) => {
+  user2.addMoney({ currency: 'RUB', amount: 500000 }, (err, data) => {
     if (err) {
-      console.error('Ошибка при добавлении денег Fatima');
+      console.error(`Ошибка при зачислении денег на счет пользователю ${user2.name.firstName}`);
     } else {
-      console.log('Добавлино 500000 руб  Fatima');
-      Fatima.money = true;
+      console.log(`Зачисленно 500000 руб на счет пользователю ${user2.name.firstName}`);
+      user2.money = true;
     }
   });
-
 
   let timer1 = setInterval(() => {
-    if (Fatima.getStatus()) {
-      Fatima.addMoney({ currency: 'RUB', amount: 500000 }, (err, data) => {
-        if (err) {
-          console.error('Ошибка при добавлении денег  Fatima');
-        } else {
-          console.log(`Добавлино 500000 руб  Fatima`);
-          Fatima.money = true;
-        }
-      });
-      Fatima.convertMoney({ fromCurrency: 'RUB', targetCurrency: 'NETCOIN', targetAmount: 100 }, (err, data) => {
-        if (err) {
-          console.log(err.message);
-        } else {
-          console.log(`Конвертация рубля в 100 Netcoin`);
-        }
-      });
+    user2.addMoney({ currency: 'RUB', amount: 500000 }, (err, data) => {
+      if (err) {
+        console.error(`Ошибка при зачислении денег на счет пользователю ${user2.name.firstName}`);
+      } else {
+        console.log(`Зачисленно 500000 руб на счет пользователю ${user2.name.firstName}`);
+        user2.isMoney = true;
+      }
+    });
+    user2.convertMoney({ fromCurrency: 'RUB', targetCurrency: 'NETCOIN', targetAmount: 100 }, (err, data) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        //console.log(`Конвертация рубля в 100 ${targetCurrency}`);
+      }
+    });
 
-      Fatima.transferMoney({ to: 'vova', amount: 100 }, (err, data) => {
-        if (err) {
-          console.error(err.code);
-          console.error(err.message);
-        } else {
-          console.log(`переведино 100 пользователю Vova`);
-        }
-      });
+    user2.transferMoney({ to: 'vova', amount: 100 }, (err, data) => {
+      if (err) {
+        console.error(err.code);
+        console.error(err.message);
+      } else {
+        //console.log(`переведино 100 пользователю `);
+      }
+    });
 
-      Fatima.getStocks((err, data) => {
-        if (err) {
-          console.error(err.message);
-        } else {
-          console.log(data[0]);
-        }
-      });
-
-      clearInterval(timer1);
-    }
+    user2.getStocks((err, data) => {
+      if (err) {
+        console.error(err.message);
+      } else {
+        console.log(data[0]);
+      }
+    });
+    clearInterval(timer1);
   }, 1000);
 }
